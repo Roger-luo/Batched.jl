@@ -1,5 +1,7 @@
 module Batched
 
-greet() = print("Hello World!")
+include("gemm.jl")
+include("adjtrans.jl")
+include("scalar_identity.jl")
 
 end # module
