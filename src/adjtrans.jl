@@ -1,5 +1,10 @@
 export Transpose
 
+"""
+    Transpose{B, T, AT <: AbstractArray{T, 3}} <: AbstractArray{T, 3}
+
+Batched transpose. Transpose a batch of matrix.
+"""
 struct Transpose{B, T, AT <: AbstractArray{T, 3}} <: AbstractArray{T, 3}
     parent::AT
 

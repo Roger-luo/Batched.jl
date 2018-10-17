@@ -1,5 +1,11 @@
 export ScalarIdentity
 
+"""
+    ScalarIdentity{B, K, T} <: AbstractArray{T, 3}
+
+A batch of scalar multiplies a batch of identities, where batch size is
+`B`, each identity's size is `K`.
+"""
 struct ScalarIdentity{B, K, T} <: AbstractArray{T, 3}
     scalars::Vector{T}
     ScalarIdentity{B, K}(scalars::Vector{T}) where {B, K, T} = new{B, K, T}(scalars)
@@ -13,14 +19,14 @@ Base.transpose(A::ScalarIdentity) = A
 
 function bgemm!(A::AbstractArray{T, 3}, B::ScalarIdentity{NBatch, K, T}, C::AbstractArray{T, 3}) where {T, NBatch, K}
     @inbounds for i in 1:NBatch
-        view(C, :, :, i) .+= B.scalars[i] * view(A, :, :, i)
+        C[:, :, i] .+= B.scalars[i] * view(A, :, :, i)
     end
     C
 end
 
 function bgemm!(A::ScalarIdentity{NBatch, K, T}, B::AbstractArray{T, 3}, C::AbstractArray{T, 3}) where {T, NBatch, K}
     @inbounds for i in 1:NBatch
-        view(C, :, :, i) .+= A.scalars[i] * view(B, :, :, i)
+        C[:, :, i] .+= A.scalars[i] * view(B, :, :, i)
     end
     C
 end
