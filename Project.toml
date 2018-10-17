@@ -1,0 +1,6 @@
+authors = ["Roger-luo <hiroger@qq.com>"]
+name = "Batched"
+uuid = "dc0ff2b0-d25e-11e8-37cc-510d4590da06"
+version = "0.1.0"
+
+[deps]
