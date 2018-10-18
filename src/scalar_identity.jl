@@ -17,16 +17,19 @@ Base.@propagate_inbounds Base.getindex(m::ScalarIdentity{B, K, T}, i::Int, j::In
 Base.IndexStyle(::Type{<:ScalarIdentity}) = IndexCartesian()
 Base.transpose(A::ScalarIdentity) = A
 
-function bgemm!(A::AbstractArray{T, 3}, B::ScalarIdentity{NBatch, K, T}, C::AbstractArray{T, 3}) where {T, NBatch, K}
-    @inbounds for i in 1:NBatch
-        C[:, :, i] .+= B.scalars[i] * view(A, :, :, i)
-    end
-    C
-end
-
-function bgemm!(A::ScalarIdentity{NBatch, K, T}, B::AbstractArray{T, 3}, C::AbstractArray{T, 3}) where {T, NBatch, K}
+function bgemm!(A::ScalarIdentity{NBatch, K, T}, B::Transpose{NBatch, T, AT}, C::AbstractArray{T, 3}) where {NBatch, K, T}
     @inbounds for i in 1:NBatch
         C[:, :, i] .+= A.scalars[i] * view(B, :, :, i)
     end
     C
 end
+
+function bgemm!(A::ScalarIdentity{NBatch, K, T}, B::AbstractArray{T, 3}, C::AbstractArray{T, 3}) where {NBatch, K, T}
+    @inbounds for i in 1:NBatch
+        C[:, :, i] .+= A.scalars[i] * view(B, :, :, i)
+    end
+    C
+end
+
+bgemm!(A::AbstractArray, B::ScalarIdentity, C::AbstractArray) = bgemm!(B, A, C)
+bgemm!(A::Transpose, B::ScalarIdentity, C::AbstractArray) = bgemm!(B, A, C)
