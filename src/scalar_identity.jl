@@ -31,5 +31,5 @@ function bgemm!(A::ScalarIdentity{NBatch, K, T}, B::AbstractArray{T, 3}, C::Abst
     C
 end
 
-bgemm!(A::AbstractArray, B::ScalarIdentity, C::AbstractArray) = bgemm!(B, A, C)
-bgemm!(A::Transpose, B::ScalarIdentity, C::AbstractArray) = bgemm!(B, A, C)
+bgemm!(A::AbstractArray{T, 3}, B::ScalarIdentity{NBatch, K, T}, C::AbstractArray{T, 3}) where {NBatch, K, T} = bgemm!(B, A, C)
+bgemm!(A::Transpose{NBatch, T}, B::ScalarIdentity{NBatch, K, T}, C::AbstractArray{T, 3}) where {NBatch, K, T} = bgemm!(B, A, C)
