@@ -6,9 +6,9 @@ export ScalarIdentity
 A batch of scalar multiplies a batch of identities, where batch size is
 `B`, each identity's size is `K`.
 """
-struct ScalarIdentity{B, K, T} <: AbstractArray{T, 3}
-    scalars::Vector{T}
-    ScalarIdentity{B, K}(scalars::Vector{T}) where {B, K, T} = new{B, K, T}(scalars)
+struct ScalarIdentity{B, K, T, VT <: AbstractVector{T}} <: AbstractArray{T, 3}
+    scalars::VT
+    ScalarIdentity{B, K}(scalars::VT) where {B, K, T, VT <: AbstractVector{T}} = new{B, K, T, VT}(scalars)
 end
 
 Base.size(x::ScalarIdentity{B, K, T}) where {B, K, T} = (K, K, B)
