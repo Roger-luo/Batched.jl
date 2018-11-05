@@ -1,4 +1,4 @@
-export BatchedArray
+export BatchedArray, BatchedMatrix, BatchedVector
 
 import LinearAlgebra
 
