@@ -47,6 +47,9 @@ Returns the size of this batched array after merging all its batched dimension t
 """
 function merged_size end
 
+Base.:(*)(lhs::AbstractBatchedMatrix, rhs::AbstractBatchedMatrix) = batched_gemm(lhs, rhs)
+
+
 """
     BatchedArray{T, NI, N, AT} <: AbstractBatchedArray{T, NI, N}
 
@@ -88,8 +91,6 @@ const BatchedMatrix{T, N, AT} = BatchedArray{T, 2, N, AT}
 
 BatchedVector(data::AbstractArray) = BatchedArray(1, data)
 BatchedMatrix(data::AbstractArray) = BatchedArray(2, data)
-
-Base.:(*)(lhs::BatchedMatrix, rhs::BatchedMatrix) = batched_gemm(lhs, rhs)
 
 # Batched Trace
 
