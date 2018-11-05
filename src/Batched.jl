@@ -1,9 +1,11 @@
 module Batched
 
-using LinearAlgebra
+# using LinearAlgebra
 
-include("gemm.jl")
-include("adjtrans.jl")
-include("scalar_identity.jl")
+include("BatchedArray.jl")
+
+# include("gemm.jl")
+# include("adjtrans.jl")
+# include("scalar_identity.jl")
 
 end # module
