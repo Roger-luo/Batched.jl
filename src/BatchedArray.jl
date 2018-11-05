@@ -1,6 +1,7 @@
 export BatchedArray, BatchedMatrix, BatchedVector
 
 import LinearAlgebra
+import LinearAlgebra: BLAS
 
 struct BatchedArray{T, NI, N, AT <: AbstractArray{T, N}} <: AbstractArray{T, N}
     data::AT
@@ -40,43 +41,99 @@ BatchedMatrix(data::AbstractArray) = BatchedArray(2, data)
 Base.:(*)(lhs::BatchedMatrix, rhs::BatchedMatrix) = LinearAlgebra.BLAS.gemm(lhs, rhs)
 
 LinearAlgebra.BLAS.gemm(A::BatchedMatrix, B::BatchedMatrix) = LinearAlgebra.BLAS.gemm('N', 'N', A, B)
-LinearAlgebra.BLAS.gemm(tA::Char, tB::Char, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T =
+LinearAlgebra.BLAS.gemm(tA::AbstractChar, tB::AbstractChar, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T =
     LinearAlgebra.BLAS.gemm(tA, tB, one(T), A, B)
 
-function LinearAlgebra.BLAS.gemm(tA::Char, tB::Char, alpha::T, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T
+function LinearAlgebra.BLAS.gemm(tA::AbstractChar, tB::AbstractChar, alpha::T, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T
     data = similar(A.data, (size(A, 1), size(B, 2), batch_size(A)...))
     fill!(data, zero(T))
     output = BatchedMatrix(data)
     LinearAlgebra.BLAS.gemm!(tA, tB, alpha, A, B, one(T), output)
 end
 
-function LinearAlgebra.BLAS.gemm!(tA::Char, tB::Char, alpha, A::BatchedMatrix, B::BatchedMatrix, beta, C::BatchedMatrix)
+function LinearAlgebra.BLAS.gemm!(tA::AbstractChar, tB::AbstractChar, alpha, A::BatchedMatrix, B::BatchedMatrix, beta, C::BatchedMatrix)
     @boundscheck check_batch_dim_size(A, B, C)
     batchA, batchB, batchC = merge_batch_dim(A), merge_batch_dim(B), merge_batch_dim(C)
     gemm!(tA, tB, alpha, batchA, batchB, beta, batchC)
     C
 end
 
+for (gemm, elty) in
+        ((:dgemm_,:Float64),
+         (:sgemm_,:Float32),
+         (:zgemm_,:ComplexF64),
+         (:cgemm_,:ComplexF32))
+    @eval begin
+        function gemm!(transA::AbstractChar, transB::AbstractChar, alpha::($elty), A::AbstractArray{$elty, 3}, B::AbstractArray{$elty, 3}, beta::($elty), C::AbstractArray{$elty, 3})
+            @assert !BLAS.has_offset_axes(A, B, C)
+            @assert size(A, 3) == size(B, 3) == size(C, 3) "batch size mismatch"
+            m = size(A, transA == 'N' ? 1 : 2)
+            ka = size(A, transA == 'N' ? 2 : 1)
+            kb = size(B, transB == 'N' ? 1 : 2)
+            n = size(B, transB == 'N' ? 2 : 1)
+            if ka != kb || m != size(C,1) || n != size(C,2)
+                throw(DimensionMismatch("A has size ($m,$ka), B has size ($kb,$n), C has size $(size(C))"))
+            end
+            BLAS.chkstride1(A)
+            BLAS.chkstride1(B)
+            BLAS.chkstride1(C)
+
+            ptrA = Base.unsafe_convert(Ptr{$elty}, A)
+            ptrB = Base.unsafe_convert(Ptr{$elty}, B)
+            ptrC = Base.unsafe_convert(Ptr{$elty}, C)
+
+            for k in 1:size(A, 3)
+                ccall((LinearAlgebra.BLAS.@blasfunc($gemm), BLAS.libblas), Cvoid,
+                    (Ref{UInt8}, Ref{UInt8}, Ref{BLAS.BlasInt}, Ref{BLAS.BlasInt},
+                     Ref{BLAS.BlasInt}, Ref{$elty}, Ptr{$elty}, Ref{BLAS.BlasInt},
+                     Ptr{$elty}, Ref{BLAS.BlasInt}, Ref{$elty}, Ptr{$elty},
+                     Ref{BLAS.BlasInt}),
+                     transA, transB, m, n,
+                     ka, alpha, ptrA, max(1,stride(A,2)),
+                     ptrB, max(1,stride(B,2)), beta, ptrC,
+                     max(1,stride(C,2)))
+
+                ptrA += size(A, 1) * size(A, 2) * 8
+                ptrB += size(B, 1) * size(B, 2) * 8
+                ptrC += size(C, 1) * size(C, 2) * 8
+            end
+            C
+        end
+        function gemm(transA::AbstractChar, transB::AbstractChar, alpha::($elty), A::AbstractArray{$elty, 3}, B::AbstractArray{$elty, 3})
+            gemm!(transA, transB, alpha, A, B, zero($elty), similar(B, $elty, (size(A, transA == 'N' ? 1 : 2), size(B, transB == 'N' ? 2 : 1), size(B, 3))))
+        end
+        function gemm(transA::AbstractChar, transB::AbstractChar, A::AbstractArray{$elty, 3}, B::AbstractArray{$elty, 3})
+            gemm(transA, transB, one($elty), A, B)
+        end
+    end
+end
+
+# Batched Trace
+
 function LinearAlgebra.tr(A::BatchedMatrix)
     out = BatchedArray(0, similar(A.data, batch_size(A)))
     batch_out = merge_batch_dim(out)
-    tr!(batch_out, merge_batch_dim(A))
+    trace!(batch_out, merge_batch_dim(A))
     out
 end
 
-function gemm!(tA::Char, tB::Char, alpha::T, A::AbstractArray{T, 3}, B::AbstractArray{T, 3}, beta::T, C::AbstractArray{T, 3}) where T
-    @assert size(A, 3) == size(B, 3) == size(C, 3) "Batch size mismatch"
-    for k in 1:size(A, 3)
-        LinearAlgebra.BLAS.gemm!(tA, tB, alpha, selectdim(A, 3, k), selectdim(B, 3, k), beta, selectdim(C, 3, k))
-    end
-    C
-end
+"""
+    trace!(B::AbstractVector{T}, A::AbstractArray{T, 3})
 
-function tr!(out::AbstractVector{T}, A::AbstractArray{T, 3}) where T
-    @inbounds for k in 1:size(A, 3)
-        out[k] = LinearAlgebra.tr(selectdim(A, 3, k))
+Perform batched matrix trace.
+"""
+function trace!(B::AbstractVector{T}, A::AbstractArray{T, 3}) where T
+    @assert size(A, 1) == size(A, 2) "Expect a square matrix" # checksquare
+    @boundscheck size(A, 3) == size(B, 1) || error("Batch size mismatch")
+
+    nbatch = size(A, 3)
+    n = size(A, 1)
+    @inbounds for k in 1:nbatch
+        for i in 1:n
+            B[k] += A[i, i, k]
+        end
     end
-    out
+    B
 end
 
 struct BatchedTranspose{T, N, AT <: AbstractArray{T, N}} <: AbstractArray{T, N}
