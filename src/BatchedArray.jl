@@ -2,8 +2,6 @@ export BatchedArray
 
 import LinearAlgebra
 
-abstract type AbstractBatchedArray
-
 struct BatchedArray{T, NI, N, AT <: AbstractArray{T, N}} <: AbstractArray{T, N}
     data::AT
 end
