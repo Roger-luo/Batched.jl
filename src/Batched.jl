@@ -11,8 +11,4 @@ include("routines/linalg.jl")
 
 include("matmul.jl")
 
-# include("gemm.jl")
-# include("adjtrans.jl")
-# include("scalar_identity.jl")
-
 end # module
