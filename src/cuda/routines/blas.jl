@@ -1,4 +1,4 @@
-using CuArrays.CUBLAS: @check, cublasop
+using CuArrays.CUBLAS: @check, cublasop, cublasStatus_t, cublasHandle_t, cublasOperation_t
 
 function cublasSgemmStridedBatched(
                handle, transA, transB,
