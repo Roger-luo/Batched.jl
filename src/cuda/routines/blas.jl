@@ -16,7 +16,7 @@ import CuArrays.CUBLAS: @check, cublasop, cublasStatus_t, cublasHandle_t, cublas
 #                handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC)
 # end
 
-function batched_gemm!(transA::Char,
+function batched_gemm_strided!(transA::Char,
                transB::Char,
                alpha::Float32,
                A::CuArray{Float32, 3},
