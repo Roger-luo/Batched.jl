@@ -1,7 +1,8 @@
 module Batched
 
-using Requires
-# using LinearAlgebra
+const ext = joinpath(dirname(@__DIR__), "deps", "ext.jl")
+isfile(ext) || error("Batched.jl has not been built, please run Pkg.build(\"Batched\").")
+include(ext)
 
 include("BatchedArray.jl")
 include("BatchedScale.jl")
@@ -12,8 +13,8 @@ include("routines/linalg.jl")
 
 include("matmul.jl")
 
-# include("cuda/cuda.jl")
-
-@init @require CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae" include("cuda/cuda.jl")
+@static if USE_CUDA
+    include("cuda/cuda.jl")
+end
 
 end # module
