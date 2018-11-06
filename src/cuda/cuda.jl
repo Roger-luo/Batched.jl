@@ -1,4 +1,5 @@
-using CuArrays, CUDAdrv
+using CuArrays
+import CUDAdrv
 
 const CuBatchedArray{T, NI, N} = BatchedArray{T, NI, N, CuArray{T, N}}
 const CuBatchedMatrix{T, N} = CuBatchedArray{T, 2, N}
