@@ -1,4 +1,4 @@
-using CuArrays
+import CuArrays: CuArray
 import CUDAdrv
 
 const CuBatchedArray{T, NI, N} = BatchedArray{T, NI, N, CuArray{T, N}}
