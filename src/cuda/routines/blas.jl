@@ -11,8 +11,8 @@ function cublasSgemmStridedBatched(
   @check ccall((:cublasSgemmStridedBatched, libcublas),
                cublasStatus_t,
                (cublasHandle_t, cublasOperation_t, cublasOperation_t, Cint, Cint, Cint,
-                Ptr{Cfloat}, Ptr{Cfloat}, Cint, Ptr{Cfloat}, Cint, Ptr{Cfloat}, Ptr{Cfloat},
-                Cint),
+                Ptr{Cfloat}, Ptr{Cfloat}, Cint, Cint, Ptr{Cfloat}, Cint, Cint, Ptr{Cfloat}, Ptr{Cfloat},
+                Cint, Cint),
                handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC)
 end
 
