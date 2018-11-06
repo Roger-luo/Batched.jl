@@ -11,6 +11,12 @@ batch dimension, it is a batch of array with dimension `NI`.
 """
 abstract type AbstractBatchedArray{T, NI, N} <: AbstractArray{T, N} end
 
+"""
+    AbstractBatchedScalar{T, N}
+
+Batched scalars.
+"""
+const AbstractBatchedScalar{T, N} = AbstractBatchedArray{T, 0, N}
 
 """
     AbstractBatchedVector{T, N}
@@ -47,6 +53,10 @@ Returns the size of this batched array after merging all its batched dimension t
 """
 function merged_size end
 
+function Base.mul!(C::BatchedMatrix{T}, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T
+    batched_gemm!('N', 'N', one(T), A, B, one(T), fill!(C, zero(T)))
+end
+
 Base.:(*)(lhs::AbstractBatchedMatrix, rhs::AbstractBatchedMatrix) = batched_gemm(lhs, rhs)
 
 
@@ -67,7 +77,12 @@ Base.size(x::BatchedArray) = size(x.parent)
 Base.strides(x::BatchedArray) = strides(x.parent)
 Base.getindex(x::BatchedArray, I...) = getindex(x.parent, I...)
 Base.setindex!(x::BatchedArray, v, I...) = setindex!(x.parent, v, I...)
-Base.IndexStyle(x::BatchedArray) = IndexStyle(x.parent)
+Base.IndexStyle(::Type{BT}) where {T, NI, N, AT, BT <: BatchedArray{T, NI, N, AT}} = IndexStyle(AT)
+
+Base.similar(x::BatchedArray{<:Any, NI}, T::Type, dims) where NI = BatchedArray(NI, similar(x.parent, T, dims))
+Base.similar(x::BatchedArray, T::Type) = similar(x, T, size(x))
+Base.similar(x::BatchedArray, dims) = similar(x, eltype(x), dims)
+Base.similar(x::BatchedArray) = similar(x, eltype(x), size(x))
 
 inner_size(x::BatchedArray{T, NI, N}) where {T, NI, N} = Tuple(size(x, i) for i in Base.OneTo(NI))
 batch_size(x::BatchedArray{T, NI, N}) where {T, NI, N} = Tuple(size(x, i) for i in (NI+1):N)
