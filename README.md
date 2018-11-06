@@ -7,15 +7,23 @@ Batched operations in Julia.
 - `BatchedArray{T, NI, N}` a general container that assumes the last `N - NI` dimensions are batch dimension
 - `BatchedMatrix`, `BatchedVector`
 - `BatchedTranspose`, `BatchedAdjoint`, `BatchedUniformScaling` batched version of them in stdlib: `LinearAlgebra`
+- for cuda, defined type alias `CuBatchedArray`, `CuBatchedMatrix`, `CuBatchedVector`
 
 ## Supported routines
 
-**(CPU)**: CPU implementations are just wrappers of for-loops for convenience.
+**(CPU)**: CPU implementations are just wrappers of for-loops.
 
 - [x] batched `gemm`: `batched_gemm`
 - [x] batched `tr`: `batched_tr`
 - [x] batched `transpose`: `transpose(::AbstractArray{T, 3})`
 - [x] batched `adjoint`
+
+**(GPU)**: GPU implementations will use **CUBLAS** routines.
+
+- [x] batched `gemm`: `batched_gemm_strided` (our `BatchedArray` can be assumed as strided)
+- [ ] batched `tr`
+- [x] batched `transpose` (same as CPU)
+- [x] batched `adjoint` (same as CPU)
 
 ## Conventions
 
