@@ -19,10 +19,10 @@ end
 function batched_gemm!(transA::Char,
                transB::Char,
                alpha::Float32,
-               A::CuBatchedVecOrMat{Float32},
-               B::CuBatchedVecOrMat{Float32},
+               A::AbstractArray{Float32, 3},
+               B::AbstractArray{Float32, 3},
                beta::Float32,
-               C::CuBatchedVecOrMat{Float32})
+               C::AbstractArray{Float32, 3})
     m = size(A, transA == 'N' ? 1 : 2)
     k = size(A, transA == 'N' ? 2 : 1)
     n = size(B, transB == 'N' ? 2 : 1)
