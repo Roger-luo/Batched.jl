@@ -1,4 +1,4 @@
-export BatchedArray, BatchedMatrix, BatchedVector
+export BatchedArray, BatchedMatrix, BatchedVector, inner_size, batch_size, merged_size
 
 import LinearAlgebra
 import LinearAlgebra: BLAS
@@ -53,12 +53,10 @@ Returns the size of this batched array after merging all its batched dimension t
 """
 function merged_size end
 
-function Base.mul!(C::BatchedMatrix{T}, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T
-    batched_gemm!('N', 'N', one(T), A, B, one(T), fill!(C, zero(T)))
+function Base.:(*)(A::AbstractBatchedMatrix, B::AbstractBatchedMatrix)
+    @assert batch_size(A) == batch_size(B) "Batch size mismatch"
+    LinearAlgebra.mul!(similar(B, (size(A, 1), size(B, 2), batch_size(A)...)), A, B)
 end
-
-Base.:(*)(lhs::AbstractBatchedMatrix, rhs::AbstractBatchedMatrix) = batched_gemm(lhs, rhs)
-
 
 """
     BatchedArray{T, NI, N, AT} <: AbstractBatchedArray{T, NI, N}
@@ -79,9 +77,9 @@ Base.getindex(x::BatchedArray, I...) = getindex(x.parent, I...)
 Base.setindex!(x::BatchedArray, v, I...) = setindex!(x.parent, v, I...)
 Base.IndexStyle(::Type{BT}) where {T, NI, N, AT, BT <: BatchedArray{T, NI, N, AT}} = IndexStyle(AT)
 
-Base.similar(x::BatchedArray{<:Any, NI}, T::Type, dims) where NI = BatchedArray(NI, similar(x.parent, T, dims))
+Base.similar(x::BatchedArray{<:Any, NI}, T::Type, dims::Dims) where NI = BatchedArray(NI, similar(x.parent, T, dims))
 Base.similar(x::BatchedArray, T::Type) = similar(x, T, size(x))
-Base.similar(x::BatchedArray, dims) = similar(x, eltype(x), dims)
+Base.similar(x::BatchedArray{T}, dims::Dims) where T = similar(x, T, dims)
 Base.similar(x::BatchedArray) = similar(x, eltype(x), size(x))
 
 inner_size(x::BatchedArray{T, NI, N}) where {T, NI, N} = Tuple(size(x, i) for i in Base.OneTo(NI))
@@ -107,30 +105,9 @@ const BatchedMatrix{T, N, AT} = BatchedArray{T, 2, N, AT}
 BatchedVector(data::AbstractArray) = BatchedArray(1, data)
 BatchedMatrix(data::AbstractArray) = BatchedArray(2, data)
 
-# Batched Trace
-
 function LinearAlgebra.tr(A::BatchedMatrix)
     out = BatchedArray(0, similar(A.parent, batch_size(A)))
     batch_out = merge_batch_dim(out)
-    trace!(batch_out, merge_batch_dim(A))
+    batched_tr!(batch_out, merge_batch_dim(A))
     out
-end
-
-"""
-    trace!(B::AbstractVector{T}, A::AbstractArray{T, 3})
-
-Perform batched matrix trace.
-"""
-function trace!(B::AbstractVector{T}, A::AbstractArray{T, 3}) where T
-    @assert size(A, 1) == size(A, 2) "Expect a square matrix" # checksquare
-    @boundscheck size(A, 3) == size(B, 1) || error("Batch size mismatch")
-
-    nbatch = size(A, 3)
-    n = size(A, 1)
-    @inbounds for k in 1:nbatch
-        for i in 1:n
-            B[k] += A[i, i, k]
-        end
-    end
-    B
 end

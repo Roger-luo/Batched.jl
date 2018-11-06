@@ -1,3 +1,11 @@
+# BLAS methods defined in this file should be all applied
+# on a rank-2/rank-3 tensor: `AbstractArray{T, 3}`
+# Other batched type should merge its batch dimension
+# first before using routines defined here.
+
+# routines in this file use the following name convention:
+# prefix `batched` + _ + BLAS routine name in stdlib/LinearAlgebra/src/blas.jl
+
 import LinearAlgebra.BLAS: BlasInt, BlasReal
 
 function batched_syr! end
@@ -8,7 +16,7 @@ for (fname, elty, lib) in ((:dsyr_,:Float64, BLAS.libblas),
                            (:csyr_,:ComplexF32, BLAS.liblapack))
 
    @eval begin
-       function syr!(uplo::AbstractChar, α::$elty, x::AbstractMatrix{$elty}, A::AbstractArray{$elty, 3})
+       function batched_syr!(uplo::AbstractChar, α::$elty, x::AbstractMatrix{$elty}, A::AbstractArray{$elty, 3})
            @assert !BLAS.has_offset_axes(A, x)
            @assert size(A, 1) == size(A, 2)
            @assert size(x, 2) == size(A, 3)
@@ -53,22 +61,21 @@ Batched version of `BLAS.gemm!`.
 """
 function batched_gemm! end
 
-batched_gemm(A::BatchedMatrix, B::BatchedMatrix) = LinearAlgebra.BLAS.gemm('N', 'N', A, B)
-batched_gemm(tA::AbstractChar, tB::AbstractChar, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T =
-    batched_gemm(tA, tB, one(T), A, B)
+batched_gemm(A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T =
+    batched_gemm('N', 'N', A, B)
+batched_gemm(transA::AbstractChar, transB::AbstractChar, A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T =
+    batched_gemm(transA, transB, one(T), A, B)
+
+function batched_gemm(transA::AbstractChar, transB::AbstractChar, alpha::T, A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T
+    @assert size(A, 3) == size(B, 3) "Batch size mismatch"
+    batched_gemm!(transA, transB, alpha, A, B, one(T), similar(B, (size(A, 1), size(B, 2), size(A, 3))))
+end
 
 function batched_gemm(tA::AbstractChar, tB::AbstractChar, alpha::T, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T
     data = similar(A.parent, (size(A, 1), size(B, 2), batch_size(A)...))
     fill!(data, zero(T))
     output = BatchedMatrix(data)
     batched_gemm!(tA, tB, alpha, A, B, one(T), output)
-end
-
-function batched_gemm!(tA::AbstractChar, tB::AbstractChar, alpha, A::BatchedMatrix, B::BatchedMatrix, beta, C::BatchedMatrix)
-    @boundscheck check_batch_dim_size(A, B, C)
-    batchA, batchB, batchC = merge_batch_dim(A), merge_batch_dim(B), merge_batch_dim(C)
-    batched_gemm!(tA, tB, alpha, batchA, batchB, beta, batchC)
-    C
 end
 
 for (gemm, elty) in
