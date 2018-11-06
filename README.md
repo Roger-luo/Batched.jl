@@ -1,5 +1,7 @@
 # Batched.jl
 
+[![Build Status](https://travis-ci.org/Roger-luo/Batched.jl.svg?branch=master)](https://travis-ci.org/Roger-luo/Batched.jl)
+
 Batched operations in Julia.
 
 ## Batched Arrays
