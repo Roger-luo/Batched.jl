@@ -1,4 +1,4 @@
-using Test, Batched, LinearAlgebra, BenchmarkTools
+using Test, Batched, LinearAlgebra
 
 @testset "Testing batched_gemm! with $elty" for elty in [Float32, Float64, ComplexF32, ComplexF64]
 

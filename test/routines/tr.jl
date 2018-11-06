@@ -1,1 +1,1 @@
-using Batched, LinearAlgebra, BenchmarkTools, Test
+using Batched, LinearAlgebra, Test
