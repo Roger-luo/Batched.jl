@@ -1,4 +1,4 @@
-import CuArrays.CUBLAS: @check, cublasop, libcublas, Status_t, cublasHandle_t, cublasOperation_t, handle
+import CuArrays.CUBLAS: @check, cublasop, cublasStatus_t, cublasHandle_t, cublasOperation_t, handle, libcublas
 
 function cublasSgemmStridedBatched(
                handle, transA, transB,
