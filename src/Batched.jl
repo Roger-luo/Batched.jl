@@ -12,8 +12,8 @@ include("routines/linalg.jl")
 
 include("matmul.jl")
 
-function __init__()
-    @require CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae" include("cuda/cuda.jl")
-end
+# include("cuda/cuda.jl")
+
+@init @require CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae" include("cuda/cuda.jl")
 
 end # module
