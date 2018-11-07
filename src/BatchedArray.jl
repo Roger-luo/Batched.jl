@@ -109,9 +109,11 @@ function check_batch_dim_size(x, xs::BatchedArray...)
     true
 end
 
+const BatchedScalar{T, N, AT} = BatchedArray{T, 0, N, AT}
 const BatchedVector{T, N, AT} = BatchedArray{T, 1, N, AT}
 const BatchedMatrix{T, N, AT} = BatchedArray{T, 2, N, AT}
 
+BatchedScalar(data::AbstractArray) = BatchedArray(0, data)
 BatchedVector(data::AbstractArray) = BatchedArray(1, data)
 BatchedMatrix(data::AbstractArray) = BatchedArray(2, data)
 
