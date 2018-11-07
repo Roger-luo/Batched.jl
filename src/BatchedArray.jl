@@ -1,4 +1,4 @@
-export BatchedArray, BatchedMatrix, BatchedVector, inner_size, batch_size, merged_size
+export BatchedArray, BatchedMatrix, BatchedVector, inner_size, batch_size, merged_size, selectbatch
 
 import LinearAlgebra
 import LinearAlgebra: BLAS
@@ -73,9 +73,19 @@ BatchedArray(NI::Int, data::AT) where {T, N, AT <: AbstractArray{T, N}} = Batche
 
 Base.size(x::BatchedArray) = size(x.parent)
 Base.strides(x::BatchedArray) = strides(x.parent)
-Base.getindex(x::BatchedArray, I...) = getindex(x.parent, I...)
 Base.setindex!(x::BatchedArray, v, I...) = setindex!(x.parent, v, I...)
+Base.getindex(x::BatchedArray, I...) = getindex(x.parent, I...)
 Base.IndexStyle(::Type{BT}) where {T, NI, N, AT, BT <: BatchedArray{T, NI, N, AT}} = IndexStyle(AT)
+
+"""
+    selectbatch(x::BatchedArray, d::Integer, i)
+
+Return a view of batch dimension `d` where the index for `d` equals `i`.
+"""
+function selectbatch(x::BatchedArray{T, NI, N}, d::Integer, i) where {T, NI, N}
+    @assert d > NI "cannot select non-batch dimension"
+    BatchedArray(NI, selectdim(x.parent, d, i))
+end
 
 Base.similar(x::BatchedArray{<:Any, NI}, T::Type, dims::Dims) where NI = BatchedArray(NI, similar(x.parent, T, dims))
 Base.similar(x::BatchedArray, T::Type) = similar(x, T, size(x))
