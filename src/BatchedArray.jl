@@ -1,5 +1,6 @@
 export AbstractBatchedArray, AbstractBatchedMatrix, AbstractBatchedVector
-export BatchedArray, BatchedMatrix, BatchedVector, inner_size, batch_size, merged_size, selectbatch
+export BatchedArray, BatchedMatrix, BatchedVector, BatchedScalar
+export inner_size, batch_size, merged_size, selectbatch
 
 import LinearAlgebra
 import LinearAlgebra: BLAS
