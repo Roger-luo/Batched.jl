@@ -2,7 +2,7 @@ batched_mul(A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T = batched_ge
 batched_mul(A::AbstractVector{T}, B::AbstractArray{T, 3}) where T = batched_mul!(similar(B), A, B)
 
 function batched_mul!(C::AbstractArray{T, 3}, A::AbstractVector{T}, B::AbstractArray{T, 3}) where T
-    @boundscheck (size(C, 3) == length(A) == size(B, 3) || error("Batch size mismatch"))
+    @boundscheck (size(C, 3) == length(A) == size(B, 3) || error("Batch size mismatch, C $(size(C, 3)), A $(length(A)) B $(size(B, 3))"))
 
     @inbounds for k in 1:size(C, 3)
         for j in 1:size(C, 2)

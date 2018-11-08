@@ -61,6 +61,31 @@ Batched version of `BLAS.gemm!`.
 """
 function batched_gemm! end
 
+batched_gemm(A::BatchedUniformScaling{T, 1}, B::AbstractArray{T, 3}) where T =
+    batched_gemm!(A, B, similar(B))
+
+function batched_gemm!(A::BatchedUniformScaling{T, 1}, B::AbstractArray{T, 3}, C::AbstractArray{T, 3}) where T
+    @boundscheck (size(C, 3) == length(A.scalars) == size(B, 3) ||
+        error("Batch size mismatch, C has size ($(size(C, 3)), ), A has size ($(length(A)), ) B has size ($(size(B, 3)), )"))
+
+    @inbounds for k in 1:size(C, 3)
+        for j in 1:size(C, 2)
+            for i in 1:size(C, 1)
+                C[i, j, k] = A[k] * B[i, j, k]
+            end
+        end
+    end
+    C
+end
+
+function batched_gemm(tA::AbstractChar, tB::AbstractChar, alpha::T, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T
+    data = similar(A.parent, (size(A, 1), size(B, 2), batch_size(A)...))
+    fill!(data, zero(T))
+    output = BatchedMatrix(data)
+    batched_gemm!(tA, tB, alpha, A, B, one(T), output)
+end
+
+
 batched_gemm(A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T =
     batched_gemm('N', 'N', A, B)
 batched_gemm(transA::AbstractChar, transB::AbstractChar, A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T =
@@ -69,13 +94,6 @@ batched_gemm(transA::AbstractChar, transB::AbstractChar, A::AbstractArray{T, 3},
 function batched_gemm(transA::AbstractChar, transB::AbstractChar, alpha::T, A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T
     @assert size(A, 3) == size(B, 3) "Batch size mismatch"
     batched_gemm!(transA, transB, alpha, A, B, one(T), similar(B, (size(A, 1), size(B, 2), size(A, 3))))
-end
-
-function batched_gemm(tA::AbstractChar, tB::AbstractChar, alpha::T, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T
-    data = similar(A.parent, (size(A, 1), size(B, 2), batch_size(A)...))
-    fill!(data, zero(T))
-    output = BatchedMatrix(data)
-    batched_gemm!(tA, tB, alpha, A, B, one(T), output)
 end
 
 for (gemm, elty) in
