@@ -60,6 +60,14 @@ function Base.:(*)(A::AbstractBatchedMatrix, B::AbstractBatchedMatrix)
     LinearAlgebra.mul!(similar(B, (size(A, 1), size(B, 2), batch_size(A)...)), A, B)
 end
 
+function check_batch_dim_size(x::AbstractBatchedArray, xs::AbstractBatchedArray...)
+    first_batch_size = batch_size(x)
+    for other in xs
+        other != first_batch_size || error("Batch size mismatch expect $(first_batch_size) got $(batch_size(other))")
+    end
+    true
+end
+
 """
     BatchedArray{T, NI, N, AT} <: AbstractBatchedArray{T, NI, N}
 
@@ -103,14 +111,6 @@ merged_size(x::BatchedArray) = (inner_size(x)..., prod(batch_size(x)))
 merge_batch_dim(x::BatchedArray{T, NI, N}) where {T, NI, N} = merge_batch_dim(Val(N-NI), x)
 merge_batch_dim(::Val{1}, x::BatchedArray) = x.parent
 merge_batch_dim(::Val, x::BatchedArray) = reshape(x.parent, merged_size(x)...)
-
-function check_batch_dim_size(x, xs::BatchedArray...)
-    first_batch_size = batch_size(x)
-    for other in xs
-        other != first_batch_size || error("Batch size mismatch expect $(first_batch_size) got $(batch_size(other))")
-    end
-    true
-end
 
 const BatchedScalar{T, N, AT} = BatchedArray{T, 0, N, AT}
 const BatchedVector{T, N, AT} = BatchedArray{T, 1, N, AT}
