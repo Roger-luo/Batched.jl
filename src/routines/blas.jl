@@ -87,9 +87,19 @@ function batched_gemm(tA::AbstractChar, tB::AbstractChar, alpha::T, A::BatchedMa
     batched_gemm!(tA, tB, alpha, A, B, one(T), output)
 end
 
+const _BLAS_BATCHED_MATRIX_LIST = [
+    (:(AbstractArray{T, 3}), 'N'),
+    (:(BatchedTranspose{T, 3}), 'T'),
+    (:(BatchedAdjoint{T, 3}), 'C'),
+]
 
-batched_gemm(A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T =
-    batched_gemm('N', 'N', A, B)
+for (TA, transA) in _BLAS_BATCHED_MATRIX_LIST
+    for (TB, transB) in _BLAS_BATCHED_MATRIX_LIST
+        @eval batched_gemm(A::$TA, B::$TB) where T =
+            batched_gemm($transA, $transB, A, B)
+    end
+end
+
 batched_gemm(transA::AbstractChar, transB::AbstractChar, A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T =
     batched_gemm(transA, transB, one(T), A, B)
 
