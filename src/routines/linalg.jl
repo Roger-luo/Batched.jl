@@ -1,3 +1,4 @@
+batched_mul(A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T = batched_gemm(A, B)
 batched_mul(A::AbstractVector{T}, B::AbstractArray{T, 3}) where T = batched_mul!(similar(B), A, B)
 
 function batched_mul!(C::AbstractArray{T, 3}, A::AbstractVector{T}, B::AbstractArray{T, 3}) where T

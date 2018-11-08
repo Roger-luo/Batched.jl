@@ -30,8 +30,8 @@ Base.IndexStyle(::Type{<:BatchedTransposeOrAdjoint}) = IndexCartesian()
 
 Base.similar(A::BatchedTransposeOrAdjoint, T::Type, dims::Dims) = similar(A.parent, T, dims)
 Base.similar(A::BatchedTransposeOrAdjoint, dims::Dims) = similar(A.parent, dims)
-Base.similar(A::BatchedTransposeOrAdjoint, T::Type) = similar(A.parent, T)
-Base.similar(A::BatchedTransposeOrAdjoint) = similar(A.parent)
+Base.similar(A::BatchedTransposeOrAdjoint, T::Type) = similar(A.parent, T, size(A))
+Base.similar(A::BatchedTransposeOrAdjoint) = similar(A.parent, size(A))
 
 Base.transpose(A::AbstractBatchedMatrix) = BatchedTranspose(A)
 Base.transpose(A::BatchedTranspose) = A.parent
