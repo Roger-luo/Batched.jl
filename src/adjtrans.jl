@@ -39,6 +39,9 @@ Base.transpose(A::BatchedTranspose) = A.parent
 Base.adjoint(A::AbstractBatchedMatrix) = BatchedAdjoint(A)
 Base.adjoint(A::BatchedAdjoint) = A.parent
 
+inner_size(A::BatchedTransposeOrAdjoint) = (size(A.parent, 2), size(A.parent, 1), size(A.parent, 3))
+batch_size(A::BatchedTransposeOrAdjoint) = batch_size(A.parent)
+
 # NOTE: this just merge the dimention of the parent
 # This should never be an exported API
 merge_batch_dim(A::BatchedTransposeOrAdjoint) = merge_batch_dim(A.parent)
