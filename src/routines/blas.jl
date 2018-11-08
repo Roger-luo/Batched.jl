@@ -61,6 +61,8 @@ Batched version of `BLAS.gemm!`.
 """
 function batched_gemm! end
 
+batched_gemm(A::AbstractArray{T, 3}, B::BatchedUniformScaling{T, 1}) where T =
+    batched_gemm(B, A)
 batched_gemm(A::BatchedUniformScaling{T, 1}, B::AbstractArray{T, 3}) where T =
     batched_gemm!(A, B, similar(B))
 
