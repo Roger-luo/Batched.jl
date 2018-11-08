@@ -12,7 +12,7 @@ can be a matrix or high dimentional array, the shape of this member is the shape
 `dims` defines the dimmension of each sample in the batch. It can be multidimentional
 as well.
 """
-struct BatchedUniformScaling{T, N, ST <: AbstractArray{T, N}} <: AbstractBatchedArray{T, 0, N}
+struct BatchedUniformScaling{T, N, ST <: AbstractArray{T, N}} <: AbstractBatchedArray{T, 0, N, ST}
     scalars::ST
 end
 

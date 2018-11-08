@@ -5,7 +5,7 @@ export Transpose
 
 Batched transpose. Transpose a batch of matrix.
 """
-struct BatchedTranspose{T, N, S <: AbstractBatchedMatrix} <: AbstractBatchedMatrix{T, N}
+struct BatchedTranspose{T, N, S <: AbstractBatchedMatrix} <: AbstractBatchedMatrix{T, N, S}
     parent::S
     BatchedTranspose(X::S) where {T, N, S <: AbstractBatchedMatrix{T, N}} = new{T, N, S}(X)
 end
@@ -15,7 +15,7 @@ end
 
 Batched ajoint. Transpose a batch of matrix.
 """
-struct BatchedAdjoint{T, N, S <: AbstractBatchedMatrix} <: AbstractBatchedMatrix{T, N}
+struct BatchedAdjoint{T, N, S <: AbstractBatchedMatrix} <: AbstractBatchedMatrix{T, N, S}
     parent::S
     BatchedTranspose(X::S) where {T, N, S <: AbstractBatchedMatrix{T, N}} = new{T, N, S}(X)
 end

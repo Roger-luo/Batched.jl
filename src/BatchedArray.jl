@@ -11,28 +11,28 @@ import LinearAlgebra: BLAS
 Abstract type batched array. A batched array use its last `N - NI` dimension as
 batch dimension, it is a batch of array with dimension `NI`.
 """
-abstract type AbstractBatchedArray{T, NI, N} <: AbstractArray{T, N} end
+abstract type AbstractBatchedArray{T, NI, N, AT <: AbstractArray{T, N}} <: AbstractArray{T, N} end
 
 """
     AbstractBatchedScalar{T, N}
 
 Batched scalars.
 """
-const AbstractBatchedScalar{T, N} = AbstractBatchedArray{T, 0, N}
+const AbstractBatchedScalar{T, N, AT} = AbstractBatchedArray{T, 0, N, AT}
 
 """
     AbstractBatchedVector{T, N}
 
 Batched vector.
 """
-const AbstractBatchedVector{T, N} = AbstractBatchedArray{T, 1, N}
+const AbstractBatchedVector{T, N, AT} = AbstractBatchedArray{T, 1, N, AT}
 
 """
     AbstractBatchedMatrix{T, N}
 
 Batched matrix.
 """
-const AbstractBatchedMatrix{T, N} = AbstractBatchedArray{T, 2, N}
+const AbstractBatchedMatrix{T, N, AT} = AbstractBatchedArray{T, 2, N, AT}
 
 """
     inner_size(batched_array) -> Tuple
@@ -67,10 +67,11 @@ A concrete type for batched arrays. `T` is the element type, `NI` is the inner s
 dimension, `N` is the total dimension and `AT` is the array type that actually holds the
 value.
 """
-struct BatchedArray{T, NI, N, AT <: AbstractArray{T, N}} <: AbstractBatchedArray{T, NI, N}
+struct BatchedArray{T, NI, N, AT <: AbstractArray{T, N}} <: AbstractBatchedArray{T, NI, N, AT}
     parent::AT
 end
 
+BatchedArray{T, NI, N, AT}(::UndefInitializer, dims::Dims{N}) where {T, NI, N, AT} = BatchedArray(NI, AT(undef, dims))
 BatchedArray(NI::Int, data::AT) where {T, N, AT <: AbstractArray{T, N}} = BatchedArray{T, NI, N, AT}(data)
 
 Base.size(x::BatchedArray) = size(x.parent)

@@ -12,6 +12,7 @@ include("routines/blas.jl")
 include("routines/linalg.jl")
 
 include("matmul.jl")
+include("broadcast.jl")
 
 @static if USE_CUDA
     include("cuda/cuda.jl")
