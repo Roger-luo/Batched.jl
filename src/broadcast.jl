@@ -10,6 +10,7 @@ end
 @inline broadcast_unbatch(x::AbstractBatchedArray) = broadcast_unbatch(x.parent)
 @inline broadcast_unbatch(x::BatchedUniformScaling) = error("cannot broadcast BatchedUniformScaling")
 
+@inline Base.ndims(::Type{BatchedBroadcasted{BC}}) where BC = ndims(BC)
 @inline Base.ndims(bc::BatchedBroadcasted) = ndims(bc.bc)
 @inline Base.getindex(bc::BatchedBroadcasted, I...) = getindex(bc.bc, I...)
 
