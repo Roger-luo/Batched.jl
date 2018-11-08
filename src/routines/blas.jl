@@ -93,10 +93,13 @@ const _BLAS_BATCHED_MATRIX_LIST = [
     (:(BatchedAdjoint{T, 3}), 'C'),
 ]
 
+@inline _unbatch(x) = x
+@inline _unbatch(x::BatchedTransposeOrAdjoint) = x.parent
+
 for (TA, transA) in _BLAS_BATCHED_MATRIX_LIST
     for (TB, transB) in _BLAS_BATCHED_MATRIX_LIST
         @eval batched_gemm(A::$TA, B::$TB) where T =
-            batched_gemm($transA, $transB, A, B)
+            batched_gemm($transA, $transB, _unbatch(A), _unbatch(B))
     end
 end
 
