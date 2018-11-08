@@ -1,6 +1,19 @@
-# struct BatchedArrayStyle{NI, AT} <: Broadcast.BroadcastStyle end
-# Base.BroadcastStyle(::Type{<:AbstractBatchedArray{T, NI, N, AT}}) where {T, NI, N, AT} = BatchedArrayStyle{NI, AT}()
-# Broadcast.BroadcastStyle(s::BatchedArrayStyle, x::Broadcast.BroadcastStyle) = s
+struct BatchedArrayStyle <: Broadcast.BroadcastStyle end
+Base.BroadcastStyle(::Type{<:AbstractBatchedArray}) = BatchedArrayStyle()
+Broadcast.BroadcastStyle(s::BatchedArrayStyle, x::Broadcast.BroadcastStyle) = s
+
+struct BatchedBroadcasted{BC}
+    bc::BC
+end
+
+broadcast_unbatch(x) = x
+broadcast_unbatch(x::AbstractBatchedArray) = broadcast_unbatch(x.parent)
+broadcast_unbatch(x::BatchedUniformScaling) = error("cannot broadcast BatchedUniformScaling")
+
+Broadcast.broadcasted(::BatchedArrayStyle, f, args...) =
+    BatchedBroadcasted(Broadcast.broadcasted(f, map(broadcast_unbatch, args)...))
+Broadcast.materialize(x::BatchedBroadcasted) = Broadcast.materialize(x.bc)
+
 # Broadcast.BroadcastStyle(s::BatchedArrayStyle{N1}, x::BatchedArrayStyle{N2}) where {N1, N2} =
 #     error("cannot broadcast on different batch")
 # Broadcast.BroadcastStyle(s::BatchedArrayStyle{N}, x::BatchedArrayStyle{N}) where N = s
