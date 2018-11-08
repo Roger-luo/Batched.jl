@@ -18,7 +18,7 @@ end
 
 Perform batched matrix trace.
 """
-batched_tr(A::AbstractArray{T, 3}) = batched_tr!(similar(A, (size(A, 3), )), A)
+batched_tr(A::AbstractArray{T, 3}) where T = batched_tr!(similar(A, (size(A, 3), )), A)
 
 """
     batched_tr!(B::AbstractVector{T}, A::AbstractArray{T, 3})
