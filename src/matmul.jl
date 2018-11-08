@@ -13,9 +13,13 @@ for (TA, transA) in _BATCHED_MATRIX_LIST, (TB, transB) in _BATCHED_MATRIX_LIST
     end
 end
 
+Base.:(*)(A::BatchedUniformScaling, B::AbstractArray{T, 3}) where T =
+    batched_mul!(similar(B), A.scalars, B)
+Base.:(*)(A::AbstractArray{T, 3}, B::BatchedUniformScaling) where T = B * A
 
 Base.:(*)(A::BatchedUniformScaling, B::AbstractBatchedArray) =
     LinearAlgebra.mul!(similar(B), A, B)
+Base.:(*)(A::AbstractBatchedArray, B::BatchedUniformScaling) = B * A
 
 function LinearAlgebra.mul!(C::BatchedArray{T, NI}, A::BatchedUniformScaling{T}, B::AbstractBatchedArray{T, NI}) where {T, NI}
     @boundscheck check_batch_dim_size(A, B, C)
@@ -23,10 +27,7 @@ function LinearAlgebra.mul!(C::BatchedArray{T, NI}, A::BatchedUniformScaling{T},
     batchB = merge_batch_dim(B)
     batchC = merge_batch_dim(C)
 
-    for k in 1:prod(batch_size(A))
-        view_batchC = selectdim(batchC, NI+1, k)
-        view_batchC .= batchA[k] .* selectdim(batchB, NI+1, k)
-    end
+    @inbounds batched_mul!(batchC, batchA, batchB)
     C
 end
 
