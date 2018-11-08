@@ -13,8 +13,12 @@ function batched_mul!(C::AbstractArray{T, 3}, A::AbstractVector{T}, B::AbstractA
     C
 end
 
+"""
+    batched_tr(A::AbstractArray{T, 3})
 
-batched_tr(A::AbstractArray) = batched_tr!(zero(A), A)
+Perform batched matrix trace.
+"""
+batched_tr(A::AbstractArray{T, 3}) = batched_tr!(similar(A, (size(A, 3), )), A)
 
 """
     batched_tr!(B::AbstractVector{T}, A::AbstractArray{T, 3})
