@@ -1,22 +1,22 @@
-struct BatchedArrayStyle <: Broadcast.BroadcastStyle end
-Base.BroadcastStyle(::Type{<:AbstractBatchedArray}) = BatchedArrayStyle()
-Broadcast.BroadcastStyle(s::BatchedArrayStyle, x::Broadcast.BroadcastStyle) = s
-
-struct BatchedBroadcasted{BC}
-    bc::BC
-end
-
-@inline broadcast_unbatch(x) = x
-@inline broadcast_unbatch(x::AbstractBatchedArray) = broadcast_unbatch(x.parent)
-@inline broadcast_unbatch(x::BatchedUniformScaling) = error("cannot broadcast BatchedUniformScaling")
-
-@inline Base.ndims(::Type{BatchedBroadcasted{BC}}) where BC = ndims(BC)
-@inline Base.ndims(bc::BatchedBroadcasted) = ndims(bc.bc)
-@inline Base.getindex(bc::BatchedBroadcasted, I...) = getindex(bc.bc, I...)
-
-@inline Broadcast.broadcasted(::BatchedArrayStyle, f, args...) =
-    BatchedBroadcasted(Broadcast.broadcasted(f, map(broadcast_unbatch, args)...))
-@inline Broadcast.materialize(x::BatchedBroadcasted) = Broadcast.materialize(x.bc)
+# struct BatchedArrayStyle <: Broadcast.BroadcastStyle end
+# Base.BroadcastStyle(::Type{<:AbstractBatchedArray}) = BatchedArrayStyle()
+# Broadcast.BroadcastStyle(s::BatchedArrayStyle, x::Broadcast.BroadcastStyle) = s
+#
+# struct BatchedBroadcasted{BC}
+#     bc::BC
+# end
+#
+# @inline broadcast_unbatch(x) = x
+# @inline broadcast_unbatch(x::AbstractBatchedArray) = broadcast_unbatch(x.parent)
+# @inline broadcast_unbatch(x::BatchedUniformScaling) = error("cannot broadcast BatchedUniformScaling")
+#
+# @inline Base.ndims(::Type{BatchedBroadcasted{BC}}) where BC = ndims(BC)
+# @inline Base.ndims(bc::BatchedBroadcasted) = ndims(bc.bc)
+# @inline Base.getindex(bc::BatchedBroadcasted, I...) = getindex(bc.bc, I...)
+#
+# @inline Broadcast.broadcasted(::BatchedArrayStyle, f, args...) =
+#     BatchedBroadcasted(Broadcast.broadcasted(f, map(broadcast_unbatch, args)...))
+# @inline Broadcast.materialize(x::BatchedBroadcasted) = Broadcast.materialize(x.bc)
 
 # Broadcast.BroadcastStyle(s::BatchedArrayStyle{N1}, x::BatchedArrayStyle{N2}) where {N1, N2} =
 #     error("cannot broadcast on different batch")
