@@ -1,6 +1,6 @@
 export batched_tr
 
-batched_tr(A::AbstractArray{T, 3}) where T = batched_tr!(A, similar(A, (size(A, 3), )))
+batched_tr(A::AbstractArray{T, 3}) where T = batched_tr!(A, fill!(similar(A, (size(A, 3), )), 0))
 
 function batched_tr!(A::AbstractArray{T, 3}, B::AbstractVector{T}) where T
     @boundscheck size(A, 3) == length(B) || error("Batch size mismatch")
