@@ -4,6 +4,7 @@ end
 
 BatchedScaleMatrix{K}(scalars::AT) where {K, T, AT <: AbstractVector{T}} = BatchedScaleMatrix{K, T, AT}(scalars)
 Base.size(A::BatchedScaleMatrix{K}) where K = (K, K, length(A.scalars))
+Base.eltype(A::BatchedScaleMatrix{K, T}) where {K, T} = T
 
 function Base.getindex(A::BatchedScaleMatrix{K, T}, i, j, k) where {K, T}
     i == j ? A.scalars[k] : zero(T)

@@ -6,6 +6,7 @@ include(ext)
 
 include("abstractarray.jl")
 include("adjtrans.jl")
+include("batched_scale.jl")
 
 include("routines/linalg.jl")
 include("routines/blas.jl")
