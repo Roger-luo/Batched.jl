@@ -4,14 +4,18 @@ const ext = joinpath(dirname(@__DIR__), "deps", "ext.jl")
 isfile(ext) || error("Batched.jl has not been built, please run Pkg.build(\"Batched\").")
 include(ext)
 
-include("abstractarray.jl")
+include("BatchedArray.jl")
+include("BatchedScale.jl")
 include("adjtrans.jl")
 
 include("routines/blas.jl")
-include("matmul.jl")
+include("routines/linalg.jl")
 
-# @static if USE_CUDA
-#     include("cuda/cuda.jl")
-# end
+include("matmul.jl")
+include("broadcast.jl")
+
+@static if USE_CUDA
+    include("cuda/cuda.jl")
+end
 
 end # module

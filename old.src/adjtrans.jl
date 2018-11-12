@@ -1,4 +1,4 @@
-export BatchedTranspose, BatchedAdjoint, BatchedTransposeOrAdjoint, batched_transpose
+export BatchedTranspose, BatchedAdjoint, BatchedTransposeOrAdjoint, batched_transpose, batched_adjoint
 
 """
     BatchedTranspose{T, N, S} <: AbstractBatchedMatrix{T, N}

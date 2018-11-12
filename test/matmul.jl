@@ -83,22 +83,3 @@ end
 
     @test vC ≈ C.parent
 end
-
-A = BatchedMatrix(rand(3, 4, 2, 3))
-B = BatchedUniformScaling(rand(2, 3))
-
-C = B * transpose(A)
-
-vA = A.parent
-vB = B.scalars
-vC = zeros(4, 3, 2, 3)
-
-for i in 1:2
-    for j in 1:3
-        vC[:, :, i, j] = vB[i, j] * transpose(vA[:, :, i, j])
-    end
-end
-vC
-vC ≈ C.parent
-
-@test vC ≈ C.parent

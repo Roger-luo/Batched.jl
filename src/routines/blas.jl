@@ -1,115 +1,7 @@
-# BLAS methods defined in this file should be all applied
-# on a rank-2/rank-3 tensor: `AbstractArray{T, 3}`
-# Other batched type should merge its batch dimension
-# first before using routines defined here.
+import LinearAlgebra: BLAS
 
-# routines in this file use the following name convention:
-# prefix `batched` + _ + BLAS routine name in stdlib/LinearAlgebra/src/blas.jl
-
-import LinearAlgebra.BLAS: BlasInt, BlasReal
-
-function batched_syr! end
-
-for (fname, elty, lib) in ((:dsyr_,:Float64, BLAS.libblas),
-                           (:ssyr_,:Float32, BLAS.libblas),
-                           (:zsyr_,:ComplexF64, BLAS.liblapack),
-                           (:csyr_,:ComplexF32, BLAS.liblapack))
-
-   @eval begin
-       function batched_syr!(uplo::AbstractChar, α::$elty, x::AbstractMatrix{$elty}, A::AbstractArray{$elty, 3})
-           @assert !BLAS.has_offset_axes(A, x)
-           @assert size(A, 1) == size(A, 2)
-           @assert size(x, 2) == size(A, 3)
-
-           n = size(A, 1)
-           if size(x, 1) != n
-               throw(DimensionMismatch("A has size ($n,$n), x has length $(size(x, 1))"))
-           end
-
-           ptrA = Base.unsafe_convert(Ptr{$elty}, A)
-           ptrX = Base.unsafe_convert(Ptr{$elty}, x)
-
-           for k in 1:size(A, 3)
-               ccall((BLAS.@blasfunc($fname), $lib), Cvoid,
-                   (Ref{UInt8}, Ref{BlasInt}, Ref{$elty}, Ptr{$elty},
-                    Ref{BlasInt}, Ptr{$elty}, Ref{BlasInt}),
-                    uplo, n, α, ptrX,
-                    stride(x, 1), ptrA, max(1,stride(A, 2)))
-
-               ptrA += size(A, 1) * size(A, 2) * sizeof($elty)
-               ptrX += size(x, 1) * sizeof($elty)
-           end
-           A
-       end
-   end
-end
-
-
-"""
-    batched_gemm(A, B)
-    batched_gemm(tA, tB, A, B)
-    batched_gemm(tA, tB, alpha, A, B)
-
-Batched version of `BLAS.gemm`.
-"""
-function batched_gemm end
-
-"""
-    batched_gemm!(transA, transB, alpha, A, B, beta, C)
-
-Batched version of `BLAS.gemm!`.
-"""
 function batched_gemm! end
-
-batched_gemm(A::AbstractArray{T, 3}, B::BatchedUniformScaling{T, 1}) where T =
-    batched_gemm(B, A)
-batched_gemm(A::BatchedUniformScaling{T, 1}, B::AbstractArray{T, 3}) where T =
-    batched_gemm!(A, B, similar(B))
-
-function batched_gemm!(A::BatchedUniformScaling{T, 1}, B::AbstractArray{T, 3}, C::AbstractArray{T, 3}) where T
-    @boundscheck (size(C, 3) == length(A.scalars) == size(B, 3) ||
-        error("Batch size mismatch, C has size ($(size(C, 3)), ), A has size ($(length(A)), ) B has size ($(size(B, 3)), )"))
-
-    @inbounds for k in 1:size(C, 3)
-        for j in 1:size(C, 2)
-            for i in 1:size(C, 1)
-                C[i, j, k] = A[k] * B[i, j, k]
-            end
-        end
-    end
-    C
-end
-
-function batched_gemm(tA::AbstractChar, tB::AbstractChar, alpha::T, A::BatchedMatrix{T}, B::BatchedMatrix{T}) where T
-    data = similar(A.parent, (size(A, 1), size(B, 2), batch_size(A)...))
-    fill!(data, zero(T))
-    output = BatchedMatrix(data)
-    batched_gemm!(tA, tB, alpha, A, B, one(T), output)
-end
-
-const _BLAS_BATCHED_MATRIX_LIST = [
-    (:(AbstractArray{T, 3}), 'N'),
-    (:(BatchedTranspose{T, 3}), 'T'),
-    (:(BatchedAdjoint{T, 3}), 'C'),
-]
-
-@inline _unbatch(x) = x
-@inline _unbatch(x::BatchedTransposeOrAdjoint) = x.parent
-
-for (TA, transA) in _BLAS_BATCHED_MATRIX_LIST
-    for (TB, transB) in _BLAS_BATCHED_MATRIX_LIST
-        @eval batched_gemm(A::$TA, B::$TB) where T =
-            batched_gemm($transA, $transB, _unbatch(A), _unbatch(B))
-    end
-end
-
-batched_gemm(transA::AbstractChar, transB::AbstractChar, A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T =
-    batched_gemm(transA, transB, one(T), A, B)
-
-function batched_gemm(transA::AbstractChar, transB::AbstractChar, alpha::T, A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T
-    @assert size(A, 3) == size(B, 3) "Batch size mismatch"
-    batched_gemm!(transA, transB, alpha, A, B, one(T), similar(B, (size(A, 1), size(B, 2), size(A, 3))))
-end
+function batched_gemm end
 
 for (gemm, elty) in
         ((:dgemm_,:Float64),
@@ -136,7 +28,7 @@ for (gemm, elty) in
             ptrC = Base.unsafe_convert(Ptr{$elty}, C)
 
             for k in 1:size(A, 3)
-                ccall((LinearAlgebra.BLAS.@blasfunc($gemm), BLAS.libblas), Cvoid,
+                ccall((BLAS.@blasfunc($gemm), BLAS.libblas), Cvoid,
                     (Ref{UInt8}, Ref{UInt8}, Ref{BLAS.BlasInt}, Ref{BLAS.BlasInt},
                      Ref{BLAS.BlasInt}, Ref{$elty}, Ptr{$elty}, Ref{BLAS.BlasInt},
                      Ptr{$elty}, Ref{BLAS.BlasInt}, Ref{$elty}, Ptr{$elty},
