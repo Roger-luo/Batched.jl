@@ -1,4 +1,4 @@
-export batched_mul!
+export batched_mul!, batched_mul
 
 batched_mul(A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T = batched_mul!(similar(A), A, B)
 
@@ -9,6 +9,9 @@ batched `mul!`.
 """
 function batched_mul! end
 
+_unbatch(A) = A
+_unbatch(A::BatchedTransposeOrAdjoint) = A.parent
+
 # bmm
 const _BATCHED_MATRIX_LIST = [
         (:(AbstractArray{T, 3}), 'N'),
@@ -18,7 +21,7 @@ const _BATCHED_MATRIX_LIST = [
 
 for (TA, transA) in _BATCHED_MATRIX_LIST, (TB, transB) in _BATCHED_MATRIX_LIST
     @eval function batched_mul!(C::AbstractArray{T, 3}, A::$TA, B::$TB) where T
-        batched_gemm!($transA, $transB, one(T), batchA, batchB, zero(T), batchC)
+        batched_gemm!($transA, $transB, one(T), _unbatch(A), _unbatch(B), zero(T), C)
         C
     end
 end
