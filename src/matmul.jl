@@ -1,6 +1,7 @@
 export batched_mul!, batched_mul
 
-batched_mul(A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T = batched_mul!(similar(A), A, B)
+batched_mul(A::AbstractArray{T, 3}, B::AbstractArray{T, 3}) where T =
+        batched_mul!(similar(A, (size(A, 1), size(B, 2), size(A, 3))), A, B)
 
 """
     batched_mul!(C, A, B) -> C
