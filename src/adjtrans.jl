@@ -1,4 +1,4 @@
-export BatchedTranspose, BatchedAdjoint, BatchedTransposeOrAdjoint, batched_transpose
+export BatchedTranspose, BatchedAdjoint, BatchedTransposeOrAdjoint, batched_transpose, batched_adjoint
 
 """
     BatchedTranspose{T, N, S} <: AbstractBatchedMatrix{T, N}
@@ -27,7 +27,8 @@ batch_size(m::BatchedTransposeOrAdjoint) = batch_size(m.parent)
 inner_size(m::BatchedTransposeOrAdjoint) = (size(m.parent, 2), size(m.parent, 1))
 Base.size(m::BatchedTransposeOrAdjoint) = (inner_size(m)..., batch_size(m)...)
 Base.axes(m::BatchedTransposeOrAdjoint) = (axes(m.parent, 2), axes(m.parent, 1), axes(m.parent)[3:end]...)
-Base.@propagate_inbounds Base.getindex(m::BatchedTransposeOrAdjoint, i::Int, j::Int, k::Int...) = getindex(m.parent, j, i, k...)
+Base.@propagate_inbounds Base.getindex(m::BatchedTranspose, i::Int, j::Int, k::Int...) = getindex(m.parent, j, i, k...)
+Base.@propagate_inbounds Base.getindex(m::BatchedAdjoint, i::Int, j::Int, k::Int...) = adjoint(getindex(m.parent, j, i, k...))
 Base.@propagate_inbounds Base.setindex!(m::BatchedTransposeOrAdjoint, v, i::Int, j::Int, k::Int...) = setindex!(m.parent, v, j, i, k...)
 Base.IndexStyle(::Type{<:BatchedTransposeOrAdjoint}) = IndexCartesian()
 
