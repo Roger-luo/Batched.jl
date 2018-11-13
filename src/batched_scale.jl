@@ -13,7 +13,7 @@ end
 function batched_mul!(Y::AbstractArray{T, 3}, A::BatchedScaleMatrix{K, T}, B::AbstractArray{T, 3}) where {K, T}
     @boundscheck size(A, 3) == size(B, 3) == size(Y, 3) || error("Batch size mismatch")
 
-    @inbounds for k in size(B, 3), j in size(B, 2), i in size(B, 1)
+    @inbounds for k in 1:size(B, 3), j in 1:size(B, 2), i in 1:size(B, 1)
         Y[i, j, k] = A.scalars[k] * B[i, j, k]
     end
     Y
@@ -26,7 +26,7 @@ function batched_mul!(Y::AbstractArray{T, 3}, A::BatchedScaleMatrix{K, T}, B::Ba
     @boundscheck size(A, 3) == size(B, 3) == size(Y, 3) || error("Batch size mismatch")
 
     # NOTE: we exchange the order of i,j since this is the contiguous order in memory
-    @inbounds for k in size(B, 3), i in size(B, 1), j in size(B, 2)
+    @inbounds for k in 1:size(B, 3), i in 1:size(B, 1), j in 1:size(B, 2)
         Y[i, j, k] = A.scalars[k] * B[i, j, k]
     end
     Y
