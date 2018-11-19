@@ -12,8 +12,8 @@ include("routines/linalg.jl")
 include("routines/blas.jl")
 include("matmul.jl")
 
-# @static if USE_CUDA
-#     include("cuda/cuda.jl")
-# end
+@static if USE_CUDA
+    include("cuda/cuda.jl")
+end
 
 end # module
