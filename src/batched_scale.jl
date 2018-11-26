@@ -10,27 +10,8 @@ function Base.getindex(A::BatchedScaleMatrix{K, T}, i, j, k) where {K, T}
     i == j ? A.scalars[k] : zero(T)
 end
 
-function batched_mul!(Y::AbstractArray{T, 3}, A::BatchedScaleMatrix{K, T}, B::AbstractArray{T, 3}) where {K, T}
-    @boundscheck size(A, 3) == size(B, 3) == size(Y, 3) || error("Batch size mismatch")
+batched_lmul!(A::BatchedScaleMatrix{K, T}, B::AbstractArray{T, 3}) where {K, T} = batched_scal!(A.scalars, B)
+batched_rmul!(B::AbstractArray{T, 3}, A::BatchedScaleMatrix{K, T}) where {K, T} = batched_scal!(A.scalars, B)
 
-    @inbounds for k in 1:size(B, 3), j in 1:size(B, 2), i in 1:size(B, 1)
-        Y[i, j, k] = A.scalars[k] * B[i, j, k]
-    end
-    Y
-end
-
-batched_mul!(Y::AbstractArray{T, 3}, A::AbstractArray{T, 3}, B::BatchedScaleMatrix{K, T}) where {K, T} =
-    batched_mul!(Y, B, A)
-
-function batched_mul!(Y::AbstractArray{T, 3}, A::BatchedScaleMatrix{K, T}, B::BatchedTransposeOrAdjoint{T, 3, <:AbstractArray{T, 3}}) where {T, K}
-    @boundscheck size(A, 3) == size(B, 3) == size(Y, 3) || error("Batch size mismatch")
-
-    # NOTE: we exchange the order of i,j since this is the contiguous order in memory
-    @inbounds for k in 1:size(B, 3), i in 1:size(B, 1), j in 1:size(B, 2)
-        Y[i, j, k] = A.scalars[k] * B[i, j, k]
-    end
-    Y
-end
-
-batched_mul!(Y::AbstractArray{T, 3}, A::BatchedTransposeOrAdjoint{T, 3, <:AbstractArray{T, 3}}, B::BatchedScaleMatrix{K, T}) where {T, K} =
-    batched_mul!(Y, B, A)
+batched_mul(A::BatchedScaleMatrix{K, T}, B::AbstractArray{T, 3}) where {K, T} = batched_lmul!(A, copy(B))
+batched_mul(B::AbstractArray{T, 3}, A::BatchedScaleMatrix{K, T}) where {K, T} = batched_rmul!(copy(B), A)
