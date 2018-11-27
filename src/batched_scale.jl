@@ -1,3 +1,5 @@
+export BatchedScaleMatrix
+
 struct BatchedScaleMatrix{K, T, AT <: AbstractVector{T}} <: AbstractArray{T, 3}
     scalars::AT
 end
