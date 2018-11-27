@@ -9,6 +9,7 @@ Base.size(A::BatchedScaleMatrix{K}) where K = (K, K, length(A.scalars))
 Base.eltype(A::BatchedScaleMatrix{K, T}) where {K, T} = T
 Base.parent(A::BatchedScaleMatrix) = A.scalars
 Base.copy(A::BatchedScaleMatrix{K}) where K = BatchedScaleMatrix{K}(copy(parent(A)))
+Adapt.adapt_structure(to, x::BatchedScaleMatrix{K}) where K = BatchedScaleMatrix{K}(adapt(to, parent(x)))
 
 
 function Base.getindex(A::BatchedScaleMatrix{K, T}, i, j, k) where {K, T}
