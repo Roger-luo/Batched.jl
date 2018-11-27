@@ -4,6 +4,8 @@
 
 Batched operations in Julia.
 
+**Warning**: this is still under its early stage.
+
 ## Batched Arrays
 
 - `BatchedArray{T, NI, N}` a general container that assumes the last `N - NI` dimensions are batch dimension

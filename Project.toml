@@ -1,7 +1,7 @@
 name = "Batched"
 uuid = "dc0ff2b0-d25e-11e8-37cc-510d4590da06"
 authors = ["Roger-luo <hiroger@qq.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 BatchedRoutines = "8149b2a8-f11c-11e8-306d-59a25846b9b7"
