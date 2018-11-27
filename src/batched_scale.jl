@@ -16,4 +16,7 @@ batched_lmul!(A::BatchedScaleMatrix{K, T}, B::AbstractArray{T, 3}) where {K, T} 
 batched_rmul!(B::AbstractArray{T, 3}, A::BatchedScaleMatrix{K, T}) where {K, T} = batched_scal!(A.scalars, B)
 
 batched_mul(A::BatchedScaleMatrix{K, T}, B::AbstractArray{T, 3}) where {K, T} = batched_lmul!(A, copy(B))
+batched_mul(A::BatchedScaleMatrix, B::BatchedTranspose) = batched_transpose(batched_mul(A, B.parent))
+batched_mul(A::BatchedScaleMatrix, B::BatchedAdjoint) = batched_adjoint(batched_mul(A, B.parent))
+
 batched_mul(B::AbstractArray{T, 3}, A::BatchedScaleMatrix{K, T}) where {K, T} = batched_rmul!(copy(B), A)
