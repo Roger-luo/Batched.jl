@@ -1,5 +1,5 @@
 export AbstractBatchedArray, AbstractBatchedScalar, AbstractBatchedVector, AbstractBatchedMatrix
-export inner_size, batch_size, merged_size, merged_batch_size
+export datum_size, batch_size, merged_size, merged_batch_size
 
 """
     AbstractBatchedArray{T, NI, N}
@@ -31,11 +31,11 @@ Batched matrix.
 const AbstractBatchedMatrix{T, N, AT} = AbstractBatchedArray{T, 2, N, AT}
 
 """
-    inner_size(batched_array) -> Tuple
+    datum_size(batched_array) -> Tuple
 
 Returns a tuple of size of each inner dimension of the batched array.
 """
-function inner_size end
+function datum_size end
 
 """
     batch_size(batched_array) -> Tuple
@@ -52,7 +52,7 @@ Returns the size of this batched array after merging all its batched dimension t
 function merged_size end
 
 merged_batch_size(A::AbstractBatchedArray) = prod(batch_size(A))
-merged_size(A::AbstractBatchedArray) = (inner_size(A)..., merged_batch_size(A))
+merged_size(A::AbstractBatchedArray) = (datum_size(A)..., merged_batch_size(A))
 
 function check_batch_dim_size(x::AbstractBatchedArray, xs::AbstractBatchedArray...)
     first_batch_size = batch_size(x)

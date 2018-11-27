@@ -1,6 +1,6 @@
 module Batched
 
-using BatchedRoutines
+using BatchedRoutines, Adapt
 
 export batched_tr
 
