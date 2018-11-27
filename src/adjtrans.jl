@@ -1,6 +1,6 @@
 export BatchedTranspose, BatchedAdjoint, BatchedTransposeOrAdjoint, batched_transpose, batched_adjoint
 
-using LinearAlgebra
+using LinearAlgebra, Adapt
 
 """
     BatchedTranspose{T, N, S} <: AbstractBatchedMatrix{T, N}
@@ -77,6 +77,9 @@ Base.adjoint(A::BatchedAdjoint) = A.parent
 # Adapt Interface
 Adapt.adapt_structure(to, x::BatchedTranspose) = BatchedTranspose(adapt(to, parent(x)))
 Adapt.adapt_structure(to, x::BatchedAdjoint) = BatchedAdjoint(adapt(to, parent(x)))
+
+Base.copy(A::BatchedTranspose) = BatchedTranspose(copy(A.parent))
+Base.copy(A::BatchedAdjoint) = BatchedAdjoint(copy(A.parent))
 
 # NOTE: this just merge the dimention of the parent
 # This should never be an exported API
