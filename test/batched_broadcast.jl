@@ -1,8 +1,8 @@
 using Test, Batched
 import Base.Broadcast: BroadcastStyle, combine_styles, broadcasted
 
-A = BatchedArray(rand(2, 2, 10))
-B = BatchedArray(rand(3, 2, 10))
+A = BatchedArray(rand(2, 3, 10));
+B = BatchedArray(rand(3, 2, 10));
 C = rand(2, 2)
 
 @test combine_styles(A, B) == Batched.BatchedArrayStyle{2, 1}()
@@ -20,3 +20,8 @@ import Batched: combine_element_axes
 combine_element_axes(*, A, B) == (Base.OneTo(2), Base.OneTo(2))
 
 copy(bc)
+
+A .* B
+
+# using LinearAlgebra
+# tr.(A)
