@@ -4,8 +4,8 @@ authors = ["Roger-luo <hiroger@qq.com>"]
 version = "0.2.0"
 
 [deps]
-Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
-BatchedRoutines = "8149b2a8-f11c-11e8-306d-59a25846b9b7"
+# Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+# BatchedRoutines = "8149b2a8-f11c-11e8-306d-59a25846b9b7"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [extras]
