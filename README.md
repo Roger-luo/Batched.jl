@@ -4,6 +4,8 @@
 
 BatchedArrays in Julia.
 
+**This package is not functional for now, please use the [BatchedRoutines.jl](https://github.com/Roger-luo/BatchedRoutines.jl) for now.
+
 **Warning**: this is still under its early stage, use at your own risk.
 
 ## Batched Arrays
